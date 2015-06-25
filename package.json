@@ -1,0 +1,27 @@
+{
+  "name": "traffic-source-cookie",
+  "version": "0.0.1",
+  "description": "A traffic source tracker",
+  "main": "traffic-source-cookie.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thiesen/traffic-source-cookie.git"
+  },
+  "keywords": [
+    "traffic",
+    "source"
+  ],
+  "author": "thiesen <nathan.thiesen@outlook.com> (http://github.com/thiesen)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thiesen/traffic-source-cookie/issues"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-jasmine": "^2.0.1",
+    "gulp-notify": "^2.2.0"
+  }
+}

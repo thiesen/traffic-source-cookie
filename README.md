@@ -1,0 +1,1 @@
+[![Build Status](https://travis-ci.org/thiesen/traffic-source-cookie.svg)](https://travis-ci.org/thiesen/traffic-source-cookie)
