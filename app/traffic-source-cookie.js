@@ -1,65 +1,100 @@
 // https://github.com/dm-guy/utm-alternative
 
-(function(cookieName, domain){
+(function(cookieName, domain) {
 
-    var traffic_source_COOKIE_TOKEN_SEPARATOR = ">>";
-    var traffic_source_date_SEPARATOR = "|>"
-    var NONE = "(none)";
+  var COOKIE_TOKEN_SEPARATOR = ">>";
+  var NONE = "(none)";
 
-    domain = domain || window.location.hostname;
+  var domain = domain || window.location.hostname;
 
-    function getCookie(cookieName){
-        var name = cookieName + "=";
-        var cookieArray = document.cookie.split(';');
-        for(var i = 0; i < cookieArray.length; i++){
-          var cookie = cookieArray[i].replace(/^\s+|\s+$/g, '');
-          if (cookie.indexOf(name)==0){
-             return cookie.substring(name.length,cookie.length);
-          }
-        }
-        return null;
-    }
+  function getCookie(cookieName){
+    var name = cookieName + "=";
+    var cookieArray = document.cookie.split(';');
+    for(var i = 0; i < cookieArray.length; i++){
+      var cookie = cookieArray[i].replace(/^\s+|\s+$/g, '');
+      if (cookie.indexOf(name)==0){
+       return cookie.substring(name.length,cookie.length);
+     }
+   }
+   return null;
+  }
 
-    function getCampaignQuery(){
-      var query = window.location.search.substring(1);
-      if((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_campaign") != -1)) {
-        parsedQuery = query;
-      } else {
-        parsedQuery = "";
-      }
-      return parsedQuery;
-    }
+  function setCookie(cookieName, cookieValue){
+    var expires = new Date();
+    expires.setTime(expires.getTime() + 62208000000);
+    document.cookie = cookieName + "=" + cookieValue + "; expires=" + expires.toGMTString() + "; domain=" + domain + "; path=/";
+  }
 
-    function setCookie(cookie, value){
-        var expires = new Date();
-        expires.setTime(expires.getTime() + 62208000000);
-        document.cookie = cookie + "=" + value + "; expires=" + expires.toGMTString() + "; domain=" + domain + "; path=/";
-    }
-
-    function isNotNullOrEmpty(string){
-        return string !== null && string !== "";
-    }
-
-    function removeProtocol(href) {
-        return href.replace(/.*?:\/\//g, "");
-    }
-
-    function getCookieValue() {
-      var traffic_source = "";
-      var utmzCookie = getCookie("__utmz");
-      var cookieCampaignParams = getCampaignQuery();
-      if(utmzCookie != null) {
-        traffic_source = "utmz:" + utmzCookie;
-      } else if(isNotNullOrEmpty(cookieCampaignParams)) {
-        traffic_source = "campaign:" + cookieCampaignParams;
-      } else {
-        traffic_source = document.referrer;
-      }
-      return traffic_source;
-    }
-    if(document.cookie.indexOf(cookieName) === -1) {
-      setCookie(cookieName, getCookieValue());
+  function setConversionSource(cookieName) {
+    existingCookieValue = getCookie(cookieName);
+    newValue = parseCookieValue();
+    if(firstCookieParam(cookieName) != newValue) {
+      newCookieValue = newValue + COOKIE_TOKEN_SEPARATOR + existingCookieValue;
+      setCookie(cookieName, newCookieValue);
     } else {
-      console.log("%"); // WIP - append new traffic info to existing cookie
+      return
     }
- })("__trf.src", ".resultadosdigitais.com.br");
+  }
+
+  function getConversionSource(cookieName){
+    var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
+    return cookieParams[0];
+  }
+
+  function getAcquisitionSource(cookieName){
+    var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
+    return cookieParams[1];
+  }
+
+  function getCampaignQuery(){
+    var query = window.location.search.substring(1);
+    if((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_campaign") != -1)) {
+      parsedQuery = query;
+    } else {
+      parsedQuery = "";
+    }
+    return parsedQuery;
+  }
+
+  function isNotNullOrEmpty(string){
+    return string !== null && string !== "";
+  }
+
+  function removeProtocol(href) {
+    return href.replace(/.*?:\/\//g, "");
+  }
+
+  function generateSourceData() {
+    var traffic_source = "";
+    var utmzCookie = getCookie("__utmz");
+    var cookieCampaignParams = getCampaignQuery();
+    if(utmzCookie != null) {
+      traffic_source = "utmz:" + utmzCookie;
+    } else if(isNotNullOrEmpty(cookieCampaignParams)) {
+      traffic_source = "campaign:" + cookieCampaignParams;
+    } else if(isNotNullOrEmpty(document.referrer)) {
+      traffic_source = document.referrer;
+    } else {
+      traffic_source = NONE;
+    }
+    return traffic_source;
+  }
+
+  function generateCookie(cookieName, acquisitionSource, conversionSource) {
+    cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
+    setCookie(cookieName, cookieValue);
+
+  }
+
+  if(document.cookie.indexOf(cookieName) === -1) {
+    source = generateSourceData();
+    generateCookie(cookieName, source, source)
+  } else {
+    acquisition = getAcquisitionSource(cookieName);
+    existingConversionSource = getConversionSource(cookieName);
+    newConversionSource = generateSourceData();
+    if (existingConversionSource != newConversionSource) {
+      generateCookie(cookieName, acquisition, newConversionSource);
+    }
+  }
+})("__trf.src", ".rdstation.com.br");
