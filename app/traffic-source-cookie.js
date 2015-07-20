@@ -1,11 +1,12 @@
 // https://github.com/dm-guy/utm-alternative
 
-(function(cookieName, domain) {
+(function() {
+
+  var cookieName = _trf.ckn
+  var domain = _trf.dmn || window.location.hostname;
 
   var COOKIE_TOKEN_SEPARATOR = ">>";
   var NONE = "(none)";
-
-  var domain = domain || window.location.hostname;
 
   function getCookie(cookieName){
     var name = cookieName + "=";
@@ -97,4 +98,4 @@
       generateCookie(cookieName, acquisition, newConversionSource);
     }
   }
-})("__trf.src", ".rdstation.com.br");
+})();
