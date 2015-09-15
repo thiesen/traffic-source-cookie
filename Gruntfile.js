@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    aws: grunt.file.readJSON('.aws_config.json'),
+    aws: grunt.file.exists('.aws_config.json') ? grunt.file.readJSON('.aws_config.json') : grunt.file.readJSON('.aws_config.json.example'),
     jshint: {
       files: ['gruntfile.js', 'app/<%= pkg.name %>'],
       options: {
