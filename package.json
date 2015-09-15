@@ -4,7 +4,7 @@
   "description": "A traffic source tracker",
   "main": "traffic-source-cookie.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
@@ -15,13 +15,25 @@
     "source"
   ],
   "author": "thiesen <nathan.thiesen@outlook.com> (http://github.com/thiesen)",
+  "contributors" : [
+    { "name" : "Thiago von Sydow",
+      "email" : "thiagovs05@gmail.com",
+      "url" : "http://github.com/thiago-sydow"
+    }
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/thiesen/traffic-source-cookie/issues"
   },
   "devDependencies": {
-    "gulp": "^3.9.0",
-    "gulp-jasmine": "^2.0.1",
-    "gulp-notify": "^2.2.0"
+    "grunt": "^0.4.5",
+    "grunt-aws": "^0.5.4",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-jshint": "^0.11.1",
+    "grunt-contrib-uglify": "^0.9.1",
+    "grunt-karma": "^0.10.1",
+    "karma": "^0.12.31",
+    "karma-jasmine": "^0.2.2",
+    "karma-phantomjs-launcher": "~0.1"
   }
 }
