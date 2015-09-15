@@ -1,17 +1,12 @@
-<script type="text/javascript">
-  var _trf = _trf || {};
-  _trf.dmn = '.rdstation.com.br';
-  _trf.ckn = '__trf.src';
-  (function() {
-     var rd_source = document.createElement('script');
-     var js_source = "https://s3-sa-east-1.amazonaws.com/rdstation-static-dev/js/lead-tracking/0.1.1/"
-     var s = document.getElementsByTagName('script')[0];
-     rd_source.type = 'text/javascript';
-     rd_source.async = true;
-     rd_source.src = js_source + 'traffic-source-cookie.js'
-     s.parentNode.insertBefore(rd_source, s);
-   })();
-</script>
+<html>
+  <head>
+    <script src="app/traffic-source-cookie.js"></script>
+    <script>
+      TrafficSourceCookie.init('__trf.src', '.rdstation.com.br');
+    </script>
+  </head>
 
+  <body>
 
-
+  </body>
+</html>
