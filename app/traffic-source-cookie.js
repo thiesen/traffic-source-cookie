@@ -1,101 +1,124 @@
+"use strict";
 // https://github.com/dm-guy/utm-alternative
 
-(function() {
+var TrafficSourceCookie;
 
-  var cookieName = _trf.ckn
-  var domain = _trf.dmn || window.location.hostname;
+(function () {
+  if (typeof TrafficSourceCookie != 'undefined' ) return;
 
   var COOKIE_TOKEN_SEPARATOR = ">>";
   var NONE = "(none)";
 
-  function getCookie(cookieName){
-    var name = cookieName + "=";
-    var cookieArray = document.cookie.split(';');
-    for(var i = 0; i < cookieArray.length; i++){
-      var cookie = cookieArray[i].replace(/^\s+|\s+$/g, '');
-      if (cookie.indexOf(name)==0){
-       return cookie.substring(name.length,cookie.length);
-     }
-   }
-   return null;
-  }
+  var cookieName, cookieDomain,
 
-  function setCookie(cookieName, cookieValue){
-    var expires = new Date();
-    expires.setTime(expires.getTime() + 62208000000);
-    document.cookie = cookieName + "=" + cookieValue + "; expires=" + expires.toGMTString() + "; domain=" + domain + "; path=/";
-  }
+    init = function (name, domain) {
+      cookieName = name;
+      cookieDomain = domain || window.location.hostname;
 
-  function setConversionSource(cookieName) {
-    existingCookieValue = getCookie(cookieName);
-    newValue = parseCookieValue();
-    if(firstCookieParam(cookieName) != newValue) {
+      if (document.cookie.indexOf(cookieName) === -1) {
+        source = generateSourceData();
+        generateCookie(cookieName, source, source);
+      } else {
+        acquisition = getAcquisitionSource(cookieName);
+        existingConversionSource = getConversionSource(cookieName);
+        newConversionSource = generateSourceData();
+
+        if (existingConversionSource != newConversionSource) {
+          generateCookie(cookieName, acquisition, newConversionSource);
+        }
+
+      }
+
+    },
+
+    getCookie = function () {
+      var name = cookieName + "=";
+      var cookieArray = document.cookie.split(';');
+
+      for(var i = 0; i < cookieArray.length; i++){
+        var cookie = cookieArray[i].replace(/^\s+|\s+$/g, '');
+
+        if (cookie.indexOf(name) === 0){
+          return cookie.substring(name.length,cookie.length);
+        }
+
+      }
+
+      return null;
+    },
+
+    setCookie = function (value) {
+      var expires = new Date();
+      expires.setTime(expires.getTime() + 62208000000);
+      document.cookie = cookieName + "=" + cookieValue + "; expires=" + expires.toGMTString() + "; domain=" + cookieDomain + "; path=/";
+    },
+
+    setConversionSource = function () {
+      existingCookieValue = getCookie(cookieName);
+      newValue = parseCookieValue();
+
+      if (firstCookieParam(cookieName) == newValue) {
+        return;
+      }
+
       newCookieValue = newValue + COOKIE_TOKEN_SEPARATOR + existingCookieValue;
       setCookie(cookieName, newCookieValue);
-    } else {
-      return
-    }
-  }
+    },
 
-  function getConversionSource(cookieName){
-    var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
-    return cookieParams[0];
-  }
+    getConversionSource = function () {
+      var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
+      return cookieParams[0];
+    },
 
-  function getAcquisitionSource(cookieName){
-    var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
-    return cookieParams[1];
-  }
+    getAcquisitionSource = function () {
+      var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
+      return cookieParams[1];
+    },
 
-  function getCampaignQuery(){
-    var query = window.location.search.substring(1);
-    if((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_campaign") != -1)) {
-      parsedQuery = query;
-    } else {
-      parsedQuery = "";
-    }
-    return parsedQuery;
-  }
+    getCampaignQuery = function () {
+      var query = window.location.search.substring(1);
+      var parsedQuery = "";
 
-  function isNotNullOrEmpty(string){
-    return string !== null && string !== "";
-  }
+      if ((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_campaign") != -1)) {
+        parsedQuery = query;
+      }
 
-  function removeProtocol(href) {
-    return href.replace(/.*?:\/\//g, "");
-  }
+      return parsedQuery;
+    },
 
-  function generateSourceData() {
-    var traffic_source = "";
-    var utmzCookie = getCookie("__utmz");
-    var cookieCampaignParams = getCampaignQuery();
-    if(utmzCookie != null) {
-      traffic_source = "utmz:" + utmzCookie;
-    } else if(isNotNullOrEmpty(cookieCampaignParams)) {
-      traffic_source = "campaign:" + cookieCampaignParams;
-    } else if(isNotNullOrEmpty(document.referrer)) {
-      traffic_source = document.referrer;
-    } else {
-      traffic_source = NONE;
-    }
-    return traffic_source;
-  }
+    isNotNullOrEmpty = function (string) {
+      return string !== null && string !== "";
+    },
 
-  function generateCookie(cookieName, acquisitionSource, conversionSource) {
-    cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
-    setCookie(cookieName, cookieValue);
+    removeProtocol = function (href) {
+      return href.replace(/.*?:\/\//g, "");
+    },
 
-  }
+    generateSourceData = function () {
+      var traffic_source = "";
+      var utmzCookie = getCookie("__utmz");
+      var cookieCampaignParams = getCampaignQuery();
 
-  if(document.cookie.indexOf(cookieName) === -1) {
-    source = generateSourceData();
-    generateCookie(cookieName, source, source)
-  } else {
-    acquisition = getAcquisitionSource(cookieName);
-    existingConversionSource = getConversionSource(cookieName);
-    newConversionSource = generateSourceData();
-    if (existingConversionSource != newConversionSource) {
-      generateCookie(cookieName, acquisition, newConversionSource);
-    }
-  }
-})();
+      if (utmzCookie !== null) {
+        traffic_source = "utmz:" + utmzCookie;
+      } else if (isNotNullOrEmpty(cookieCampaignParams)) {
+        traffic_source = "campaign:" + cookieCampaignParams;
+      } else if (isNotNullOrEmpty(document.referrer)) {
+        traffic_source = document.referrer;
+      } else {
+        traffic_source = NONE;
+      }
+
+      return traffic_source;
+    },
+
+    generateCookie = function (acquisitionSource, conversionSource) {
+      cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
+      setCookie(cookieName, cookieValue);
+    };
+
+    TrafficSourceCookie = {
+      init : init
+    };
+
+}());
