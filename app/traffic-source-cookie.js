@@ -51,7 +51,7 @@ var TrafficSourceCookie;
     setCookie = function (value) {
       var expires = new Date();
       expires.setTime(expires.getTime() + 62208000000);
-      document.cookie = cookieName + "=" + cookieValue + "; expires=" + expires.toGMTString() + "; domain=" + cookieDomain + "; path=/";
+      document.cookie = cookieName + "=" + value + "; expires=" + expires.toGMTString() + "; domain=" + cookieDomain + "; path=/";
     },
 
     getCookiesParams = function () {
