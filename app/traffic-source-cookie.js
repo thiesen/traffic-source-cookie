@@ -16,15 +16,16 @@ var TrafficSourceCookie;
       cookieDomain = domain || window.location.hostname;
 
       if (document.cookie.indexOf(cookieName) === -1) {
-        source = generateSourceData();
-        generateCookie(cookieName, source, source);
+        var source = generateSourceData();
+        generateCookie(source, source);
       } else {
-        acquisition = getAcquisitionSource(cookieName);
-        existingConversionSource = getConversionSource(cookieName);
-        newConversionSource = generateSourceData();
+        var cookieParams = getCookiesParams();
+        var existingConversionSource = cookieParams[0];
+        var acquisition = cookieParams[1];
+        var newConversionSource = generateSourceData();
 
         if (existingConversionSource != newConversionSource) {
-          generateCookie(cookieName, acquisition, newConversionSource);
+          generateCookie(acquisition, newConversionSource);
         }
 
       }
@@ -53,26 +54,8 @@ var TrafficSourceCookie;
       document.cookie = cookieName + "=" + cookieValue + "; expires=" + expires.toGMTString() + "; domain=" + cookieDomain + "; path=/";
     },
 
-    setConversionSource = function () {
-      existingCookieValue = getCookie(cookieName);
-      newValue = parseCookieValue();
-
-      if (firstCookieParam(cookieName) == newValue) {
-        return;
-      }
-
-      newCookieValue = newValue + COOKIE_TOKEN_SEPARATOR + existingCookieValue;
-      setCookie(cookieName, newCookieValue);
-    },
-
-    getConversionSource = function () {
-      var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
-      return cookieParams[0];
-    },
-
-    getAcquisitionSource = function () {
-      var cookieParams = getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
-      return cookieParams[1];
+    getCookiesParams = function () {
+      return getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
     },
 
     getCampaignQuery = function () {
@@ -95,9 +78,9 @@ var TrafficSourceCookie;
     },
 
     generateSourceData = function () {
-      var traffic_source = "";
-      var utmzCookie = getCookie("__utmz");
-      var cookieCampaignParams = getCampaignQuery();
+      var traffic_source = "",
+          utmzCookie = getCookie("__utmz"),
+          cookieCampaignParams = getCampaignQuery();
 
       if (utmzCookie !== null) {
         traffic_source = "utmz:" + utmzCookie;
@@ -113,8 +96,8 @@ var TrafficSourceCookie;
     },
 
     generateCookie = function (acquisitionSource, conversionSource) {
-      cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
-      setCookie(cookieName, cookieValue);
+      var cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
+      setCookie(cookieValue);
     };
 
     TrafficSourceCookie = {
