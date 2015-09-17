@@ -32,8 +32,8 @@ var TrafficSourceCookie;
 
     },
 
-    getCookie = function () {
-      var name = cookieName + "=",
+    getCookie = function (ck_name) {
+      var name = ck_name + "=",
           cookieArray = document.cookie.split(';');
 
       for(var i = 0; i < cookieArray.length; i++){
@@ -62,7 +62,7 @@ var TrafficSourceCookie;
       var query = window.location.search.substring(1);
       var parsedQuery = "";
 
-      if ((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_campaign") != -1)) {
+      if ((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_source") != -1)) {
         parsedQuery = query;
       }
 
