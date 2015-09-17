@@ -33,8 +33,8 @@ var TrafficSourceCookie;
     },
 
     getCookie = function () {
-      var name = cookieName + "=";
-      var cookieArray = document.cookie.split(';');
+      var name = cookieName + "=",
+          cookieArray = document.cookie.split(';');
 
       for(var i = 0; i < cookieArray.length; i++){
         var cookie = cookieArray[i].replace(/^\s+|\s+$/g, '');
