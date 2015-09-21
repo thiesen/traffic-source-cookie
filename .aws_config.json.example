@@ -1,0 +1,8 @@
+{
+  "AWSAccessKeyId": "xxxxxxxxxxxx",
+  "AWSSecretKey": "super-secret-key",
+  "bucket": "your-bucket",
+  "destination": "destination/path",
+  "distributionId": "cloudfront-distribuition-id",
+  "region": "aws-region"
+}
