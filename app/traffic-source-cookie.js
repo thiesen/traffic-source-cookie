@@ -77,7 +77,7 @@ var TrafficSourceCookie;
       return href.replace(/.*?:\/\//g, "");
     },
 
-    generateSourceData = function (isAcquisition = false) {
+    generateSourceData = function (isAcquisition) {
       var traffic_source = "",
           utmzCookie = getCookie("__utmz"),
           cookieCampaignParams = getCampaignQuery();
