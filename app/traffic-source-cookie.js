@@ -16,7 +16,7 @@ var TrafficSourceCookie;
       cookieDomain = domain || window.location.hostname;
 
       if (document.cookie.indexOf(cookieName) === -1) {
-        var source = generateSourceData();
+        var source = generateSourceData(true);
         generateCookie(source, source);
       } else {
         var cookieParams = getCookiesParams();
@@ -77,13 +77,13 @@ var TrafficSourceCookie;
       return href.replace(/.*?:\/\//g, "");
     },
 
-    generateSourceData = function () {
+    generateSourceData = function (isAcquisition) {
       var traffic_source = "",
           utmzCookie = getCookie("__utmz"),
           cookieCampaignParams = getCampaignQuery();
 
-      if (utmzCookie !== null) {
-        traffic_source = "utmz:" + utmzCookie;
+      if (utmzCookie !== null && isAcquisition) {
+        traffic_source = utmzCookie;
       } else if (isNotNullOrEmpty(cookieCampaignParams)) {
         traffic_source = "campaign:" + cookieCampaignParams;
       } else if (isNotNullOrEmpty(document.referrer)) {
