@@ -85,7 +85,7 @@ var TrafficSourceCookie;
       if (utmzCookie !== null && isAcquisition) {
         traffic_source = utmzCookie;
       } else if (isNotNullOrEmpty(cookieCampaignParams)) {
-        traffic_source = "campaign:" + cookieCampaignParams;
+        traffic_source = cookieCampaignParams;
       } else if (isNotNullOrEmpty(document.referrer)) {
         traffic_source = document.referrer;
       } else {
