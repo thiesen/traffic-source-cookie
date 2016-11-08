@@ -6,7 +6,8 @@ var TrafficSourceCookie;
 (function () {
   if (typeof TrafficSourceCookie != 'undefined' ) return;
 
-  var COOKIE_TOKEN_SEPARATOR = ">>";
+  var COOKIE_SEPARATOR_EXP = />{2,}/;
+  var COOKIE_TOKEN_SEPARATOR = ">>>";
   var NONE = "(none)";
 
   var cookieName, cookieDomain,
@@ -55,7 +56,7 @@ var TrafficSourceCookie;
     },
 
     getCookiesParams = function () {
-      return getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
+      return getCookie(cookieName).split(COOKIE_SEPARATOR_EXP);
     },
 
     getCampaignQuery = function () {
