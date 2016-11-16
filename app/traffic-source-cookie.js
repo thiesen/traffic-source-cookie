@@ -87,7 +87,7 @@ var TrafficSourceCookie;
       } else if (isNotNullOrEmpty(cookieCampaignParams)) {
         traffic_source = cookieCampaignParams;
       } else if (isNotNullOrEmpty(document.referrer)) {
-        traffic_source = document.referrer;
+        traffic_source = document.referrer.split(';')[0];
       } else {
         traffic_source = NONE;
       }
