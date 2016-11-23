@@ -32,6 +32,22 @@ var TrafficSourceCookie;
 
     },
 
+    encodeValue = function(value) {
+      if (typeof window.btoa == 'function') {
+        return btoa(value);
+      }
+
+      return value;
+    },
+
+    decodeValue = function(value) {
+      if (typeof window.atob == 'function') {
+        return atob(value);
+      }
+
+      return value;
+    },
+
     getCookie = function (ck_name) {
       var name = ck_name + "=",
           cookieArray = document.cookie.split(';');
@@ -55,7 +71,13 @@ var TrafficSourceCookie;
     },
 
     getCookiesParams = function () {
-      return getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
+      var cookieValue = getCookie(cookieName);
+
+      if (cookieValue.length > 0 && !cookieValue.includes(COOKIE_TOKEN_SEPARATOR)) {
+        cookieValue = decodeValue(cookieValue);
+      }
+
+      return cookieValue.split(COOKIE_TOKEN_SEPARATOR);
     },
 
     getCampaignQuery = function () {
@@ -97,6 +119,8 @@ var TrafficSourceCookie;
 
     generateCookie = function (acquisitionSource, conversionSource) {
       var cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
+      cookieValue = encodeValue(cookieValue);
+
       setCookie(cookieValue);
     };
 
