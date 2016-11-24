@@ -73,7 +73,7 @@ var TrafficSourceCookie;
     getCookiesParams = function () {
       var cookieValue = getCookie(cookieName);
 
-      if (cookieValue.length > 0 && !cookieValue.includes(COOKIE_TOKEN_SEPARATOR)) {
+      if (cookieValue.length > 0 && cookieValue.indexOf(COOKIE_TOKEN_SEPARATOR) == -1) {
         cookieValue = decodeValue(cookieValue);
       }
 
