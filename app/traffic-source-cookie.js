@@ -20,20 +20,18 @@ var TrafficSourceCookie;
         generateCookie(source, source);
       } else {
         var cookieParams = getCookiesParams();
-        var existingConversionSource = cookieParams[0];
-        var acquisition = cookieParams[1];
+        var existingConversionSource = cookieParams.first_session.value;
+        var acquisition = cookieParams.current_session.value;
         var newConversionSource = generateSourceData();
 
         if (existingConversionSource != newConversionSource) {
           generateCookie(acquisition, newConversionSource);
         }
-
       }
-
     },
 
     encodeValue = function(value) {
-      if (typeof window.btoa == 'function') {
+      if (typeof window.btoa === 'function') {
         return btoa(value);
       }
 
@@ -73,11 +71,20 @@ var TrafficSourceCookie;
     getCookiesParams = function () {
       var cookieValue = getCookie(cookieName);
 
-      if (cookieValue.length > 0 && cookieValue.indexOf(COOKIE_TOKEN_SEPARATOR) == -1) {
+      try {
         cookieValue = decodeValue(cookieValue);
+      } catch (e) {
+        cookieValue = cookieValue;
+      } finally {
+        try {
+          cookieValue = JSON.parse(unescape(cookieValue));
+        } catch (e) {
+          cookieValue = cookieValue.split(COOKIE_TOKEN_SEPARATOR);
+          cookieValue = generateJSON(cookieValue[0], cookieValue[1]);
+        } finally {
+          return cookieValue;
+        }
       }
-
-      return cookieValue.split(COOKIE_TOKEN_SEPARATOR);
     },
 
     getCampaignQuery = function () {
@@ -117,15 +124,32 @@ var TrafficSourceCookie;
       return traffic_source;
     },
 
+    generateJSON = function (acquisitionSource, conversionSource) {
+      return {
+        first_session: {
+          value: conversionSource,
+          extra_params: {
+            rdst_srcid: null
+          }
+        },
+        current_session: {
+          value: acquisitionSource,
+          extra_params: {
+            rdst_srcid: null
+          }
+        }
+      };
+    },
+
     generateCookie = function (acquisitionSource, conversionSource) {
-      var cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
-      cookieValue = encodeValue(cookieValue);
-
-      setCookie(cookieValue);
+      var cookieValue = generateJSON(acquisitionSource, conversionSource);
+      console.log(cookieValue);
+      var encodedCookieValue = encodeValue(JSON.stringify(cookieValue));
+      setCookie(encodedCookieValue);
     };
 
-    TrafficSourceCookie = {
-      init : init
-    };
+  TrafficSourceCookie = {
+    init: init
+  };
 
 }());
