@@ -7,6 +7,7 @@ var TrafficSourceCookie;
   if (typeof TrafficSourceCookie != 'undefined' ) return;
 
   var COOKIE_TOKEN_SEPARATOR = ">>";
+  var QUERY_EXTRA_PARAMS = /rdst_srcid/;
   var NONE = "(none)";
 
   var cookieName, cookieDomain,
@@ -20,11 +21,11 @@ var TrafficSourceCookie;
         generateCookie(source, source);
       } else {
         var cookieParams = getCookiesParams();
-        var existingConversionSource = cookieParams.first_session.value;
-        var acquisition = cookieParams.current_session.value;
+        var existingConversionSource = cookieParams.current_session;
+        var acquisition = cookieParams.first_session;
         var newConversionSource = generateSourceData();
 
-        if (existingConversionSource != newConversionSource) {
+        if (existingConversionSource.value !== newConversionSource) {
           generateCookie(acquisition, newConversionSource);
         }
       }
@@ -80,7 +81,7 @@ var TrafficSourceCookie;
           cookieValue = JSON.parse(unescape(cookieValue));
         } catch (e) {
           cookieValue = cookieValue.split(COOKIE_TOKEN_SEPARATOR);
-          cookieValue = generateJSON(cookieValue[0], cookieValue[1]);
+          cookieValue = generateJSON({ value: cookieValue[0] }, { value: cookieValue[1] });
         } finally {
           return cookieValue;
         }
@@ -89,13 +90,29 @@ var TrafficSourceCookie;
 
     getCampaignQuery = function () {
       var query = window.location.search.substring(1);
-      var parsedQuery = "";
+      var parsedQuery = '';
 
-      if ((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_source") != -1)) {
+      if ((query.indexOf('utm_campaign') !== -1) || (query.indexOf('utm_source') !== -1)) {
         parsedQuery = query;
       }
 
       return parsedQuery;
+    },
+
+    getCampaignExtraParams = function () {
+      var source = window.location.search.substring(1);
+      var extraParam = {};
+
+      var params = source.split('&');
+
+      params.forEach(function (param) {
+        if (param.match(QUERY_EXTRA_PARAMS)) {
+          var newParam = param.split('=');
+          extraParam[newParam[0]] = newParam[1];
+        }
+      });
+
+      return extraParam;
     },
 
     isNotNullOrEmpty = function (string) {
@@ -121,29 +138,21 @@ var TrafficSourceCookie;
         traffic_source = NONE;
       }
 
-      return traffic_source;
+      return {
+        value: traffic_source,
+        extra_params: getCampaignExtraParams()
+      };
     },
 
     generateJSON = function (acquisitionSource, conversionSource) {
       return {
-        first_session: {
-          value: conversionSource,
-          extra_params: {
-            rdst_srcid: null
-          }
-        },
-        current_session: {
-          value: acquisitionSource,
-          extra_params: {
-            rdst_srcid: null
-          }
-        }
+        first_session: acquisitionSource,
+        current_session: conversionSource
       };
     },
 
     generateCookie = function (acquisitionSource, conversionSource) {
       var cookieValue = generateJSON(acquisitionSource, conversionSource);
-      console.log(cookieValue);
       var encodedCookieValue = encodeValue(JSON.stringify(cookieValue));
       setCookie(encodedCookieValue);
     };
