@@ -7,6 +7,7 @@ var TrafficSourceCookie;
   if (typeof TrafficSourceCookie != 'undefined' ) return;
 
   var COOKIE_TOKEN_SEPARATOR = ">>";
+  var QUERY_EXTRA_PARAMS = /rdst_srcid/;
   var NONE = "(none)";
 
   var cookieName, cookieDomain,
@@ -20,16 +21,30 @@ var TrafficSourceCookie;
         generateCookie(source, source);
       } else {
         var cookieParams = getCookiesParams();
-        var existingConversionSource = cookieParams[0];
-        var acquisition = cookieParams[1];
+        var existingConversionSource = cookieParams.current_session;
+        var acquisition = cookieParams.first_session;
         var newConversionSource = generateSourceData();
 
-        if (existingConversionSource != newConversionSource) {
+        if (existingConversionSource.value !== newConversionSource) {
           generateCookie(acquisition, newConversionSource);
         }
+      }
+    },
 
+    encodeValue = function(value) {
+      if (typeof window.btoa === 'function') {
+        return btoa(value);
       }
 
+      return value;
+    },
+
+    decodeValue = function(value) {
+      if (typeof window.atob == 'function') {
+        return atob(value);
+      }
+
+      return value;
     },
 
     getCookie = function (ck_name) {
@@ -55,18 +70,49 @@ var TrafficSourceCookie;
     },
 
     getCookiesParams = function () {
-      return getCookie(cookieName).split(COOKIE_TOKEN_SEPARATOR);
+      var cookieValue = getCookie(cookieName);
+
+      try {
+        cookieValue = decodeValue(cookieValue);
+      } catch (e) {
+        cookieValue = cookieValue;
+      } finally {
+        try {
+          cookieValue = JSON.parse(unescape(cookieValue));
+        } catch (e) {
+          cookieValue = cookieValue.split(COOKIE_TOKEN_SEPARATOR);
+          cookieValue = generateJSON({ value: cookieValue[0] }, { value: cookieValue[1] });
+        } finally {
+          return cookieValue;
+        }
+      }
     },
 
     getCampaignQuery = function () {
       var query = window.location.search.substring(1);
-      var parsedQuery = "";
+      var parsedQuery = '';
 
-      if ((query.indexOf("utm_campaign") != -1) || (query.indexOf("utm_source") != -1)) {
+      if ((query.indexOf('utm_campaign') !== -1) || (query.indexOf('utm_source') !== -1)) {
         parsedQuery = query;
       }
 
       return parsedQuery;
+    },
+
+    getCampaignExtraParams = function () {
+      var source = window.location.search.substring(1);
+      var extraParam = {};
+
+      var params = source.split('&');
+
+      params.forEach(function (param) {
+        if (param.match(QUERY_EXTRA_PARAMS)) {
+          var newParam = param.split('=');
+          extraParam[newParam[0]] = newParam[1];
+        }
+      });
+
+      return extraParam;
     },
 
     isNotNullOrEmpty = function (string) {
@@ -87,21 +133,32 @@ var TrafficSourceCookie;
       } else if (isNotNullOrEmpty(cookieCampaignParams)) {
         traffic_source = cookieCampaignParams;
       } else if (isNotNullOrEmpty(document.referrer)) {
-        traffic_source = document.referrer;
+        traffic_source = document.referrer.split(';')[0];
       } else {
         traffic_source = NONE;
       }
 
-      return traffic_source;
+      return {
+        value: traffic_source,
+        extra_params: getCampaignExtraParams()
+      };
+    },
+
+    generateJSON = function (acquisitionSource, conversionSource) {
+      return {
+        first_session: acquisitionSource,
+        current_session: conversionSource
+      };
     },
 
     generateCookie = function (acquisitionSource, conversionSource) {
-      var cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
-      setCookie(cookieValue);
+      var cookieValue = generateJSON(acquisitionSource, conversionSource);
+      var encodedCookieValue = encodeValue(JSON.stringify(cookieValue));
+      setCookie(encodedCookieValue);
     };
 
-    TrafficSourceCookie = {
-      init : init
-    };
+  TrafficSourceCookie = {
+    init: init
+  };
 
 }());
