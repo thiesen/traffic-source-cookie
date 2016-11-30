@@ -1,164 +1,146 @@
-"use strict";
 // https://github.com/dm-guy/utm-alternative
+
+/* jslint browser: true */
 
 var TrafficSourceCookie;
 
 (function () {
-  if (typeof TrafficSourceCookie != 'undefined' ) return;
+  'use strict';
+  if (typeof TrafficSourceCookie !== 'undefined') return;
 
-  var COOKIE_TOKEN_SEPARATOR = ">>";
+  var COOKIE_TOKEN_SEPARATOR = '>>';
   var QUERY_EXTRA_PARAMS = /rdst_srcid/;
-  var NONE = "(none)";
+  var NONE = '(none)';
 
-  var cookieName, cookieDomain,
+  var cookieName;
+  var cookieDomain;
+  var source;
 
-    init = function (name, domain) {
-      cookieName = name;
-      cookieDomain = domain || window.location.hostname;
+  var init = function (name, domain) {
+    cookieName = name;
+    cookieDomain = domain || window.location.hostname;
+    source = window.location.search.substring(1);
 
-      if (document.cookie.indexOf(cookieName) === -1) {
-        var source = generateSourceData(true);
-        generateCookie(source, source);
-      } else {
-        var cookieParams = getCookiesParams();
-        var existingConversionSource = cookieParams.current_session;
-        var acquisition = cookieParams.first_session;
-        var newConversionSource = generateSourceData();
+    if (document.cookie.indexOf(cookieName) === -1) {
+      var trafficSource = generateSourceData(true);
+      generateCookie(trafficSource, trafficSource);
+    } else {
+      var cookieParams = getCookieParams();
+      var existingConversionSource = cookieParams.current_session;
+      var acquisition = cookieParams.first_session;
+      var newConversionSource = generateSourceData();
 
-        if (existingConversionSource.value !== newConversionSource) {
-          generateCookie(acquisition, newConversionSource);
-        }
+      if (existingConversionSource.value !== newConversionSource) {
+        generateCookie(acquisition, newConversionSource);
       }
-    },
+    }
+  };
 
-    encodeValue = function(value) {
-      if (typeof window.btoa === 'function') {
-        return btoa(value);
-      }
+  var encodeValue = function (value) {
+    if (typeof window.btoa === 'function') return btoa(value);
+    return value;
+  };
 
-      return value;
-    },
+  var decodeValue = function (value) {
+    if (typeof window.atob === 'function') return atob(value);
+    return value;
+  };
 
-    decodeValue = function(value) {
-      if (typeof window.atob == 'function') {
-        return atob(value);
-      }
+  var getCookie = function (ckName) {
+    var name = ckName + '=';
+    var cookieArray = document.cookie.split(';');
 
-      return value;
-    },
+    for (var i = 0; i < cookieArray.length; i++) {
+      var cookie = cookieArray[i].replace(/^\s+|\s+$/g, '');
+      if (cookie.indexOf(name) === 0) return cookie.substring(name.length, cookie.length);
+    }
 
-    getCookie = function (ck_name) {
-      var name = ck_name + "=",
-          cookieArray = document.cookie.split(';');
+    return null;
+  };
 
-      for(var i = 0; i < cookieArray.length; i++){
-        var cookie = cookieArray[i].replace(/^\s+|\s+$/g, '');
+  var setCookie = function (value) {
+    var expires = new Date();
+    expires.setTime(expires.getTime() + 62208000000);
+    document.cookie = cookieName + '=' + value + '; expires=' + expires.toGMTString() + '; domain=' + cookieDomain + '; path=/';
+  };
 
-        if (cookie.indexOf(name) === 0){
-          return cookie.substring(name.length,cookie.length);
-        }
+  var getCookieParams = function () {
+    var cookieValue = getCookie(cookieName);
 
-      }
+    if (cookieValue.length > 0 && cookieValue.indexOf(COOKIE_TOKEN_SEPARATOR) === -1) {
+      cookieValue = decodeValue(cookieValue);
+    }
 
-      return null;
-    },
+    try {
+      cookieValue = JSON.parse(unescape(cookieValue));
+    } catch (error) {
+      cookieValue = cookieValue.split(COOKIE_TOKEN_SEPARATOR);
+      cookieValue = mountJsonCookie({ value: cookieValue[0] }, { value: cookieValue[1] });
+    }
 
-    setCookie = function (value) {
-      var expires = new Date();
-      expires.setTime(expires.getTime() + 62208000000);
-      document.cookie = cookieName + "=" + value + "; expires=" + expires.toGMTString() + "; domain=" + cookieDomain + "; path=/";
-    },
+    return cookieValue;
+  };
 
-    getCookiesParams = function () {
-      var cookieValue = getCookie(cookieName);
+  var getCampaignQuery = function () {
+    if ((source.indexOf('utm_campaign') === -1) || (source.indexOf('utm_source') === -1)) return '';
+    return source;
+  };
 
-      try {
-        cookieValue = decodeValue(cookieValue);
-      } catch (e) {
-        cookieValue = cookieValue;
-      } finally {
-        try {
-          cookieValue = JSON.parse(unescape(cookieValue));
-        } catch (e) {
-          cookieValue = cookieValue.split(COOKIE_TOKEN_SEPARATOR);
-          cookieValue = generateJSON({ value: cookieValue[0] }, { value: cookieValue[1] });
-        } finally {
-          return cookieValue;
-        }
-      }
-    },
+  var getCampaignExtraParams = function () {
+    var extraParam = {};
 
-    getCampaignQuery = function () {
-      var query = window.location.search.substring(1);
-      var parsedQuery = '';
+    source.split('&').forEach(function (param) {
+      if (!param.match(QUERY_EXTRA_PARAMS)) return;
+      var newParam = param.split('=');
+      extraParam[newParam[0]] = newParam[1];
+    });
 
-      if ((query.indexOf('utm_campaign') !== -1) || (query.indexOf('utm_source') !== -1)) {
-        parsedQuery = query;
-      }
+    return extraParam;
+  };
 
-      return parsedQuery;
-    },
+  var isNotNullOrEmpty = function (string) {
+    return string !== null && string !== '';
+  };
 
-    getCampaignExtraParams = function () {
-      var source = window.location.search.substring(1);
-      var extraParam = {};
+  var removeProtocol = function (href) {
+    return href.replace(/.*?:\/\//g, '');
+  };
 
-      var params = source.split('&');
+  var generateSourceData = function (isAcquisition) {
+    var utmzCookie = getCookie('__utmz');
+    var cookieCampaignParams = getCampaignQuery();
+    var trafficSource;
 
-      params.forEach(function (param) {
-        if (param.match(QUERY_EXTRA_PARAMS)) {
-          var newParam = param.split('=');
-          extraParam[newParam[0]] = newParam[1];
-        }
-      });
+    if (utmzCookie !== null && isAcquisition) {
+      trafficSource = utmzCookie;
+    } else if (isNotNullOrEmpty(cookieCampaignParams)) {
+      trafficSource = cookieCampaignParams;
+    } else if (isNotNullOrEmpty(document.referrer)) {
+      trafficSource = document.referrer.split(';')[0];
+    } else {
+      trafficSource = NONE;
+    }
 
-      return extraParam;
-    },
-
-    isNotNullOrEmpty = function (string) {
-      return string !== null && string !== "";
-    },
-
-    removeProtocol = function (href) {
-      return href.replace(/.*?:\/\//g, "");
-    },
-
-    generateSourceData = function (isAcquisition) {
-      var traffic_source = "",
-          utmzCookie = getCookie("__utmz"),
-          cookieCampaignParams = getCampaignQuery();
-
-      if (utmzCookie !== null && isAcquisition) {
-        traffic_source = utmzCookie;
-      } else if (isNotNullOrEmpty(cookieCampaignParams)) {
-        traffic_source = cookieCampaignParams;
-      } else if (isNotNullOrEmpty(document.referrer)) {
-        traffic_source = document.referrer.split(';')[0];
-      } else {
-        traffic_source = NONE;
-      }
-
-      return {
-        value: traffic_source,
-        extra_params: getCampaignExtraParams()
-      };
-    },
-
-    generateJSON = function (acquisitionSource, conversionSource) {
-      return {
-        first_session: acquisitionSource,
-        current_session: conversionSource
-      };
-    },
-
-    generateCookie = function (acquisitionSource, conversionSource) {
-      var cookieValue = generateJSON(acquisitionSource, conversionSource);
-      var encodedCookieValue = encodeValue(JSON.stringify(cookieValue));
-      setCookie(encodedCookieValue);
+    return {
+      value: trafficSource,
+      extra_params: getCampaignExtraParams()
     };
+  };
+
+  var mountJsonCookie = function (acquisitionSource, conversionSource) {
+    return {
+      first_session: acquisitionSource,
+      current_session: conversionSource
+    };
+  };
+
+  var generateCookie = function (acquisitionSource, conversionSource) {
+    var cookieValue = mountJsonCookie(acquisitionSource, conversionSource);
+    var encodedCookieValue = encodeValue(JSON.stringify(cookieValue));
+    setCookie(encodedCookieValue);
+  };
 
   TrafficSourceCookie = {
     init: init
   };
-
 }());
