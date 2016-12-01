@@ -26,13 +26,12 @@ var TrafficSourceCookie;
       generateCookie(trafficSource, trafficSource);
     } else {
       var cookieParams = getCookieParams();
-      var existingConversionSource = cookieParams.current_session;
+      var existingConversionSource = cookieParams.current_session.value;
       var acquisition = cookieParams.first_session;
-      var newConversionSource = generateSourceData();
+      var newConversion = generateSourceData();
 
-      if (existingConversionSource.value !== newConversionSource) {
-        generateCookie(acquisition, newConversionSource);
-      }
+      if (existingConversionSource === newConversion.value) return;
+      generateCookie(acquisition, newConversion);
     }
   };
 
@@ -42,8 +41,8 @@ var TrafficSourceCookie;
   };
 
   var decodeValue = function (value) {
-    if (typeof window.atob === 'function') return atob(value);
-    return value;
+    if (typeof window.atob !== 'function') return value;
+    try { return atob(value); } catch (e) { return value; }
   };
 
   var getCookie = function (ckName) {
@@ -66,10 +65,7 @@ var TrafficSourceCookie;
 
   var getCookieParams = function () {
     var cookieValue = getCookie(cookieName);
-
-    if (cookieValue.length > 0 && cookieValue.indexOf(COOKIE_TOKEN_SEPARATOR) === -1) {
-      cookieValue = decodeValue(cookieValue);
-    }
+    cookieValue = decodeValue(cookieValue);
 
     try {
       cookieValue = JSON.parse(unescape(cookieValue));
