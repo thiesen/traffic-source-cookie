@@ -7,6 +7,7 @@ var TrafficSourceCookie;
   if (typeof TrafficSourceCookie != 'undefined' ) return;
 
   var COOKIE_TOKEN_SEPARATOR = ">>";
+  var COOKIE_PREFIX = "encoded_";
   var NONE = "(none)";
 
   var cookieName, cookieDomain,
@@ -73,7 +74,8 @@ var TrafficSourceCookie;
     getCookiesParams = function () {
       var cookieValue = getCookie(cookieName);
 
-      if (cookieValue.length > 0 && cookieValue.indexOf(COOKIE_TOKEN_SEPARATOR) == -1) {
+      if (cookieValue.length > 0 && cookieValue.indexOf(COOKIE_PREFIX) === 0) {
+        cookieValue = cookieValue.replace(COOKIE_PREFIX, "");
         cookieValue = decodeValue(cookieValue);
       }
 
@@ -119,7 +121,7 @@ var TrafficSourceCookie;
 
     generateCookie = function (acquisitionSource, conversionSource) {
       var cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
-      cookieValue = encodeValue(cookieValue);
+      cookieValue = COOKIE_PREFIX + encodeValue(cookieValue);
 
       setCookie(cookieValue);
     };
