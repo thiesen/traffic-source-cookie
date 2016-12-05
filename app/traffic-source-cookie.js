@@ -9,6 +9,7 @@ var TrafficSourceCookie;
   if (typeof TrafficSourceCookie !== 'undefined') return;
 
   var COOKIE_TOKEN_SEPARATOR = '>>';
+  var COOKIE_PREFIX = 'encoded_';
   var QUERY_EXTRA_PARAMS = /rdst_srcid/;
   var NONE = '(none)';
 
@@ -36,13 +37,17 @@ var TrafficSourceCookie;
   };
 
   var encodeValue = function (value) {
-    if (typeof window.btoa === 'function') return btoa(value);
+    if (typeof window.btoa === 'function') return COOKIE_PREFIX + btoa(value);
     return value;
   };
 
   var decodeValue = function (value) {
     if (typeof window.atob !== 'function') return value;
-    try { return atob(value); } catch (e) { return value; }
+    if (value.length > 0 && value.indexOf(COOKIE_PREFIX) === 0) {
+      var decodedValue = value.replace(COOKIE_PREFIX, '');
+      return atob(decodedValue);
+    }
+    return value;
   };
 
   var getCookie = function (ckName) {
@@ -132,6 +137,7 @@ var TrafficSourceCookie;
 
   var generateCookie = function (acquisitionSource, conversionSource) {
     var cookieValue = mountJsonCookie(acquisitionSource, conversionSource);
+    console.log(cookieValue);
     var encodedCookieValue = encodeValue(JSON.stringify(cookieValue));
     setCookie(encodedCookieValue);
   };
