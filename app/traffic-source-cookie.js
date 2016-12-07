@@ -31,7 +31,6 @@ var TrafficSourceCookie;
       var acquisition = cookieParams.first_session;
       var newConversion = generateSourceData();
 
-      if (existingConversionSource === newConversion.value) return;
       generateCookie(acquisition, newConversion);
     }
   };
@@ -76,7 +75,7 @@ var TrafficSourceCookie;
       cookieValue = JSON.parse(unescape(cookieValue));
     } catch (error) {
       cookieValue = cookieValue.split(COOKIE_TOKEN_SEPARATOR);
-      cookieValue = mountJsonCookie({ value: cookieValue[0] }, { value: cookieValue[1] });
+      cookieValue = mountJsonCookie({ value: cookieValue[1] }, { value: cookieValue[0] });
     }
 
     return cookieValue;
