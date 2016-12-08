@@ -136,7 +136,6 @@ var TrafficSourceCookie;
 
   var generateCookie = function (acquisitionSource, conversionSource) {
     var cookieValue = mountJsonCookie(acquisitionSource, conversionSource);
-    console.log(cookieValue);
     var encodedCookieValue = encodeValue(JSON.stringify(cookieValue));
     setCookie(encodedCookieValue);
   };
