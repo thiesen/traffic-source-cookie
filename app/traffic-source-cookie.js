@@ -35,7 +35,7 @@ var TrafficSourceCookie;
 
     encodeValue = function(value) {
       if (typeof window.btoa == 'function') {
-        return btoa(value);
+        return COOKIE_PREFIX + btoa(value);
       }
 
       return value;
@@ -121,7 +121,7 @@ var TrafficSourceCookie;
 
     generateCookie = function (acquisitionSource, conversionSource) {
       var cookieValue = conversionSource + COOKIE_TOKEN_SEPARATOR + acquisitionSource;
-      cookieValue = COOKIE_PREFIX + encodeValue(cookieValue);
+      cookieValue = encodeValue(cookieValue);
 
       setCookie(cookieValue);
     };
