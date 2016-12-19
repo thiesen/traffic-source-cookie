@@ -5,6 +5,7 @@
 var TrafficSourceCookie;
 
 (function () {
+<<<<<<< HEAD
   'use strict';
   if (typeof TrafficSourceCookie !== 'undefined') return;
 
