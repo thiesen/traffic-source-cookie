@@ -140,7 +140,12 @@ var TrafficSourceCookie;
     setCookie(encodedCookieValue);
   };
 
+  var hasTrafficSourceCookie = function (name) {
+    return getCookie(name) !== null;
+  };
+
   TrafficSourceCookie = {
-    init: init
+    init: init,
+    hasTrafficSourceCookie: hasTrafficSourceCookie
   };
 }());
